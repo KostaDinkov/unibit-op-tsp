@@ -1,178 +1,75 @@
 ﻿using System;
 using System.Collections.Generic;
-using Console = Colorful.Console;
-using System.Drawing;
 using System.Text;
 
 namespace tsp_dp
 {
     /**
- * An implementation of the traveling salesman problem in Java using dynamic programming to improve
- * the time complexity from O(n!) to O(n^2 * 2^n).
- *
- * <p>Time Complexity: O(n^2 * 2^n) Space Complexity: O(n * 2^n)
- *
- * @author William Fiset, william.alexandre.fiset@gmail.com
- */
+     * An implementation of the traveling salesman problem in Java using dynamic programming to improve
+     * the time complexity from O(n!) to O(n^2 * 2^n).
+     * <p>
+     *     Time Complexity: O(n^2 * 2^n) Space Complexity: O(n * 2^n)
+     *     @author William Fiset, william.alexandre.fiset@gmail.com
+     */
     public class Program
     {
         public static void Main()
         {
-            // Create adjacency matrix
-            //int n = 6;
-            //double[,] distanceMatrix = new double[n, n];
+            double[,] distanceMatrix = TestData.Test5;
+            
 
-            //for (int i = 0; i < n; i++)
-            //{
-            //    for (int j = 0; j < n; j++)
-            //    {
-            //        distanceMatrix[i, j] = 10000;
-            //    }
-            //}
-            //distanceMatrix[5, 0] = 10;
-            //distanceMatrix[1, 5] = 12;
-            //distanceMatrix[4, 1] = 2;
-            //distanceMatrix[2, 4] = 4;
-            //distanceMatrix[3, 2] = 6;
-            //distanceMatrix[0, 3] = 8;
-
-            double[,] distanceMatrix = new double[,]
-            {
-                { 0, 1, 4, 5, 10},
-                { 1, 0, 2, 6, 3 },
-                { 4, 2, 0, 7, 8 },
-                { 5, 6, 7, 0, 9 },
-                {10, 3, 8, 9, 0 }
-            };
-
-            int startNode = 0;
-            TspDp solver =
-                new TspDp(startNode, distanceMatrix);
-
-            Console.WriteLine("Tour: " + solver.getTour());
-            Console.WriteLine("Tour cost: " + solver.getTourCost());
+            var startNode = 0;
+            var solver = new TspDp(startNode, distanceMatrix);
+            //solver.PrintMemoTbl();
+            Console.WriteLine("Tour: " + solver.ReconstructTour());
+            Console.WriteLine("Tour cost: " + solver.TourCost);
         }
     }
 
 
     public class TspDp
     {
-
-        private readonly int N;
-        private readonly int start;
         private readonly double[,] distance;
-        private List<int> tour = new List<int>();
-        private double minTourCost = Double.PositiveInfinity;
-        private bool ranSolver = false;
-
+        private readonly double[,] memo;
+        private readonly int NodeCount;
+        private readonly int start;
 
         public TspDp(double[,] distance) : this(0, distance)
         {
-
         }
 
         public TspDp(int start, double[,] distance)
         {
-            //Броят на бензиностанциите
-            N = distance.GetLength(0);
-
-            // Ако бензиностанциите са 2, минималното разстояние 
-            // е равно на разстоянието от първата до втората бензиностанция, 
-            // умножено по 2 (заради връщането обратно към първата) 
-            if (N == 2)
-            {
-                minTourCost = distance[1, 0] * 2;
-                ranSolver = true;
-            };
-
+            NodeCount = distance.GetLength(0);
+            TourCost = double.PositiveInfinity;
             this.start = start;
             this.distance = distance;
-        }
-
-        // Returns the optimal tour for the traveling salesman problem.
-        public string getTour()
-        {
-            if (!ranSolver) solve();
-            tour.Reverse();
-            return String.Join("=>", tour);
+            memo = new double[NodeCount, 1 << NodeCount];
+            ComputeMinTourCost();
         }
 
         // Returns the minimal tour cost.
-        public double getTourCost()
+        public double TourCost { get; private set; }
+
+        // Returns the optimal tour for the traveling salesman problem.
+        public string ReconstructTour()
         {
-            if (!ranSolver) solve();
-            return minTourCost;
-        }
-
-        // Solves the traveling salesman problem and caches solution.
-        public void solve()
-        {
-
-            if (ranSolver) return;
-
-            int END_STATE = (1 << N) - 1;
-
-            // We construct a N by 2^N size matrix
-            double[,] memo = new double[N, (1 << N)];
-
-            // Add all outgoing edges from the starting node to memo table.
-            for (int end = 0; end < N; end++)
-            {
-                if (end == start) continue;
-                memo[end, (1 << start) | (1 << end)] = distance[start, end];
-            }
-
-            for (int r = 3; r <= N; r++)
-            {
-                foreach (int subset in combinations(r, N))
-                {
-                    if (notIn(start, subset)) continue;
-                    for (int next = 0; next < N; next++)
-                    {
-                        if (next == start || notIn(next, subset)) continue;
-                        int subsetWithoutNext = subset ^ (1 << next);
-                        double minDist = double.PositiveInfinity;
-                        for (int end = 0; end < N; end++)
-                        {
-                            if (end == start || end == next || notIn(end, subset)) continue;
-                            double newDistance = memo[end, subsetWithoutNext] + distance[end, next];
-                            if (newDistance < minDist)
-                            {
-                                minDist = newDistance;
-                            }
-                        }
-                        memo[next, subset] = minDist;
-                    }
-                }
-            }
-
-            // Connect tour back to starting node and minimize cost.
-            for (int i = 0; i < N; i++)
-            {
-                if (i == start) continue;
-                double tourCost = memo[i, END_STATE] + distance[i, start];
-                if (tourCost < minTourCost)
-                {
-                    minTourCost = tourCost;
-                }
-            }
-            PrintMemoTbl(memo);
-            int lastNode = start;
-            int state = END_STATE;
+            var tour = new List<int>();
+            var lastNode = start;
+            var state = (1 << NodeCount) - 1;
             tour.Add(start);
 
             // Reconstruct TSP path from memo table.
-            for (int i = 1; i < N; i++)
+            while (state > 1)
             {
-
-                // the current number of the gass station to be added to the tour
-                int node = -1;
-                for (int j = 0; j < N; j++)
+                // the current number of the gas station to be added to the tour
+                var node = -1;
+                for (var j = 0; j < NodeCount; j++)
                 {
-                    if (j == start || notIn(j, state)) continue;
+                    if (j == start || NotIn(j, state)) continue;
                     if (node == -1) node = j;
-                    double prevDist = memo[node, state] + distance[node, lastNode];
-                    double newDist = memo[j, state] + distance[j, lastNode];
+                    var prevDist = memo[node, state] + distance[node, lastNode];
+                    var newDist = memo[j, state] + distance[j, lastNode];
                     if (newDist < prevDist)
                     {
                         node = j;
@@ -185,31 +82,92 @@ namespace tsp_dp
             }
 
             tour.Add(start);
-            ranSolver = true;
+
+            tour.Reverse();
+            return string.Join(" => ", tour);
         }
 
-        private static bool notIn(int elem, int subset)
+        // Solves the traveling salesman problem and caches solution.
+        private void ComputeMinTourCost()
         {
-            return ((1 << elem) & subset) == 0;
+            if (NodeCount == 2)
+            {
+                TourCost = distance[1, 0] * 2;
+                return;
+            }
+
+            ;
+
+            var finalState = (1 << NodeCount) - 1;
+
+
+            // Add all outgoing edges from the starting node to memo table.
+            for (var end = 0; end < NodeCount; end++)
+            {
+                if (end == start) continue;
+                memo[end, (1 << start) | (1 << end)] = distance[start, end];
+            }
+
+
+            for (var r = 3; r <= NodeCount; r++)
+            {
+                foreach (var subset in Combinations(r, NodeCount))
+                {
+                    if (NotIn(start, subset)) continue;
+                    for (var next = 0; next < NodeCount; next++)
+                    {
+                        if (next == start || NotIn(next, subset)) continue;
+                        var subsetWithoutNext = subset ^ (1 << next);
+                        var minDist = double.PositiveInfinity;
+                        for (var end = 0; end < NodeCount; end++)
+                        {
+                            if (end == start || end == next || NotIn(end, subset)) continue;
+                            var newDistance = memo[end, subsetWithoutNext] + distance[end, next];
+                            if (newDistance < minDist)
+                            {
+                                minDist = newDistance;
+                            }
+                        }
+
+                        memo[next, subset] = minDist;
+                    }
+                }
+            }
+
+            // Connect tour back to starting node and minimize cost.
+            for (var i = 0; i < NodeCount; i++)
+            {
+                if (i == start) continue;
+                var tourCost = memo[i, finalState] + distance[i, start];
+                if (tourCost < TourCost)
+                {
+                    TourCost = tourCost;
+                }
+            }
+        }
+
+
+        public static bool NotIn(int node, int subset)
+        {
+            return ((1 << node) & subset) == 0;
         }
 
         // This method generates all bit sets of size n where r bits
         // are set to one. The result is returned as a list of integer masks.
-        public static List<int> combinations(int r, int n)
+        public static List<int> Combinations(int r, int n)
         {
-            List<int> subsets = new List<int>();
-            combinations(0, 0, r, n, subsets);
+            var subsets = new List<int>();
+            Combinations(0, 0, r, n, subsets);
             return subsets;
         }
 
         // To find all the combinations of size r we need to recurse until we have
         // selected r elements (aka r = 0), otherwise if r != 0 then we still need to select
         // an element which is found after the position of our last selected element
-        private static void combinations(int set, int at, int r, int n, List<int> subsets)
+        private static void Combinations(int set, int at, int r, int n, List<int> subsets)
         {
-
             // Return early if there are more elements left to select than what is available.
-            int elementsLeftToPick = n - at;
+            var elementsLeftToPick = n - at;
             if (elementsLeftToPick < r) return;
 
             // We selected 'r' elements so we found a valid subset!
@@ -219,58 +177,53 @@ namespace tsp_dp
             }
             else
             {
-                for (int i = at; i < n; i++)
+                for (var i = at; i < n; i++)
                 {
                     // Try including this element
-                    set ^= (1 << i);
+                    set ^= 1 << i;
 
-                    combinations(set, i + 1, r - 1, n, subsets);
+                    Combinations(set, i + 1, r - 1, n, subsets);
 
                     // Backtrack and try the instance where we did not include this element
-                    set ^= (1 << i);
+                    set ^= 1 << i;
                 }
             }
         }
 
-        public static void PrintMemoTbl(double[,] matrix)
+        public void PrintMemoTbl()
         {
+            Console.OutputEncoding = Encoding.UTF8;
             var result = new StringBuilder();
             Console.Write(" ".PadRight(3));
-            for (int h = 3; h < matrix.GetLength(1); h++)
+
+
+            for (var h = 3; h < memo.GetLength(1); h++)
             {
                 if (h % 2 == 0) continue;
-                Console.Write(Convert.ToString(h).PadLeft(2), Color.YellowGreen);
-                
-                Console.Write("|".PadLeft(2));
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.Write(Convert.ToString(h).PadLeft(4));
+                Console.ResetColor();
+                Console.Write("\u2502".PadLeft(3));
             }
-            Console.WriteLine();
-            for (int row = 1; row < matrix.GetLength(0); row++)
+
+            Console.Write("\n" + new string('\u2501', memo.GetLength(1) / 2 * 7 - 4) + "\n");
+
+            for (var row = 1; row < memo.GetLength(0); row++)
             {
-                Console.Write(row.ToString().PadRight(3), Color.YellowGreen);
-                for (int col = 3; col < matrix.GetLength(1); col++)
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.Write(row.ToString().PadRight(3));
+                Console.ResetColor();
+                for (var col = 3; col < memo.GetLength(1); col++)
                 {
                     if (col % 2 == 0) continue;
-                    if(matrix[row,col]!= 0)
-                    {
-                        Console.Write(matrix[row, col].ToString().PadLeft(2), Color.Pink);
-                    }
-                    else
-                    {
-                        Console.Write(matrix[row, col].ToString().PadLeft(2), Color.DarkGray);
-                    }
-                    
-                    
+                    if (memo[row, col] != 0) Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.Write(memo[row, col].ToString().PadLeft(4));
                     Console.ResetColor();
-                    Console.Write("|".PadLeft(2));
+                    Console.Write("\u2502".PadLeft(3));
                 }
+
                 Console.WriteLine();
             }
-
-            
         }
-
-
     }
-
-
 }
