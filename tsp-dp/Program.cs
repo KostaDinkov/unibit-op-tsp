@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace GasStations
 {
-    /**
+    /*
      * Solution to the "Gas Stations" problem,
      * presented in the Programming Basics course, semester one, Unibit university, Sofia, Bulgaria
      * The implementation is based on the algorithm by Bellman-Held-Karp for the traveling salesman problem.
@@ -13,7 +12,7 @@ namespace GasStations
      * 
      * The algorithm used here achieves time complexity of O(n^2 * 2^n) and space complexity: O(n * 2^n)
      * @author Kosta Dinkov
-     **/
+     */
     public class Program
     {
         public static void Main()
@@ -29,7 +28,7 @@ namespace GasStations
             {
                 int[,] distanceMatrix = GetTestData();
                 var solver = new TspDp(startNode, distanceMatrix);
-                Console.WriteLine( solver.TourCost);
+                Console.WriteLine(solver.TourCost);
             }
         }
 
@@ -47,19 +46,17 @@ namespace GasStations
                     .Split(' ', StringSplitOptions.RemoveEmptyEntries)
                     .Select(int.Parse).ToArray();
 
-                Debug.Assert(distances.Length == nodeCount - node);
                 for (int nextNode = node + 1, i = 0; i < distances.Length; nextNode++, i++)
                 {
                     distanceMatrix[node, nextNode] = distances[i];
                     distanceMatrix[nextNode, node] = distances[i];
                 }
             }
-            //Utils.Matrix.Print(distanceMatrix);
+            
             return distanceMatrix;
         }
     }
-
-
+    
     public class TspDp
     {
         private readonly int[,] distance;
@@ -79,8 +76,11 @@ namespace GasStations
 
         // Returns the minimal tour cost.
         public int TourCost { get; private set; }
-
         
+        /// <summary>
+        /// Computes the minimum cost cycle from a starting
+        /// node that visits all other nodes and 
+        /// </summary>
         private void ComputeMinTourCost()
         {
             // in the case of only 2 nodes we return the doubled distance between them
@@ -93,7 +93,7 @@ namespace GasStations
             // the fullSet contains all nodes,
             // therefore its bit string for 5 nodes will look like 11111 which is 31 in decimal
             var fullSet = (1 << nodeCount) - 1;
-            
+
             // We start filling our memo table with the distances from the starting node to all other nodes,
             // which are known from the distance matrix
             for (var nextNode = 0; nextNode < nodeCount; nextNode++)
@@ -140,7 +140,7 @@ namespace GasStations
                         // is subMinusNextEnd = 10101
                         var subMinusNextEnd = subset ^ (1 << nextEnd);
                         var minDist = int.MaxValue;
-                        
+
                         // The lastEnd is the last node in the minimum cost path from the previous subset
                         // To continue the example from above, the last subset that does not include nextNode
                         // was 10101, so the lastEnd can be either 2 or 4 for the 0-2-4 path or 0-4-2 path.
@@ -150,7 +150,7 @@ namespace GasStations
                             // Also lastEnd must be in the subMinusNextEnd subset
                             // Otherwise we skip and continue to check for another possible lastEnd
                             if (lastEnd == startNode || lastEnd == nextEnd || NotIn(lastEnd, subMinusNextEnd)) continue;
-                            
+
                             // Below we can see that we take the already computed in a previous iteration 
                             // minimum value for the distance of a path that starts at 0, visits all nodes
                             // in subMinusNextEnd and ends at lastEnd
@@ -165,7 +165,7 @@ namespace GasStations
                             // This result is at memo[4,0b10111] or memo[4, 23]
                             // Now for each possible value for lastEnd, we sum the min path from 0 to lastEnd
                             // with the distance from lastEnd to nextEnd
-                            
+
                             var newDistance = memo[lastEnd, subMinusNextEnd] + distance[lastEnd, nextEnd];
 
                             // Of all the possible results we find the one with the minimum value ...
@@ -174,6 +174,7 @@ namespace GasStations
                                 minDist = newDistance;
                             }
                         }
+
                         // ... and add it to the memo table. 
                         // As per the example above, if  subset = 11111, nextEnd=3, subMinusNextEnd = 10111
                         // memo[3,31] = minimum ot the (memo[lastEnd,23] + distance[lastEnd,nextEnd]), for all possible values of lastEnd
@@ -189,17 +190,17 @@ namespace GasStations
             // while adding the cost of that last edge that connects to 0, to the cost of the path.
             // For each path, this will result in a tour from 0 to 0 that visits all other nodes.
             // Finally we choose the minimal cost tour as our optimal.
-            for (var i = 0; i < nodeCount; i++)
+            for (var node = 0; node < nodeCount; node++)
             {
-                if (i == startNode) continue;
-                var tourCost = memo[i, fullSet] + distance[i, startNode];
+                if (node == startNode) continue;
+                var tourCost = memo[node, fullSet] + distance[node, startNode];
                 if (tourCost < TourCost)
                 {
                     TourCost = tourCost;
                 }
             }
         }
-        
+
         /// <summary>
         /// Checks if a node is not in a subset of nodes
         /// </summary>
@@ -220,12 +221,12 @@ namespace GasStations
             return subsets;
         }
 
-        
+
         private static void Combinations(int set, int at, int r, int n, List<int> subsets)
         {
             var elementsLeftToPick = n - at;
             if (elementsLeftToPick < r) return;
-            
+
             if (r == 0)
             {
                 subsets.Add(set);
@@ -240,7 +241,5 @@ namespace GasStations
                 }
             }
         }
-
-        
     }
 }

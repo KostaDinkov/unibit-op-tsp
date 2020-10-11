@@ -3,16 +3,30 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
 using System.Text;
-
+using Utils;
 
 namespace GasStationsDemo
 {
-
+    /*
+     * The code below is mostly the same as the code in the GasStations project
+     * There are some additional information being printed on the console like
+     * the memo table (if n <= 5),
+     * the tour itself, e.g. 0-3-4-1-5,
+     * and some benchmarking timings
+     * The input is not read from the console, but being imported
+     * from a class with some aditional test data.
+     * 
+     * author Kosta Dinkov
+     * 
+     */
     public class Program
     {
         public static void Main()
         {
-            int[,] distanceMatrix = Utils.TestData.Test3;
+            // The TestData class in the Utils project contains additional
+            // test cases besides the one from the project specification
+            // See Utils.TestData for additional info
+            var distanceMatrix = TestData.Test1;
             var N = distanceMatrix.GetLength(0);
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -28,29 +42,28 @@ namespace GasStationsDemo
             Console.WriteLine("Tour: " + solver.ReconstructTour());
             Console.WriteLine("Tour cost: " + solver.TourCost);
             Console.WriteLine($"Execution time for N={N}: {stopwatch.ElapsedMilliseconds / 1000d} seconds");
-            BigInteger cycles = (N - 1) * (N - 2) * BigInteger.Pow(2, N - 3) + (N - 1);
-            BigInteger cyclePerSecond = (cycles / (stopwatch.ElapsedMilliseconds)) * 1000;
+            var cycles = (N - 1) * (N - 2) * BigInteger.Pow(2, N - 3) + (N - 1);
+            var cyclePerSecond = cycles / stopwatch.ElapsedMilliseconds * 1000;
             Console.WriteLine($"Total Tour Computations = {cycles}. Computations per second: {cyclePerSecond}");
         }
     }
-
-
+    
     public class TspDp
     {
         private readonly int[,] distance;
         private readonly int[,] memo;
         private readonly int nodeCount;
-        private readonly int start;
+        private readonly int startNode;
 
         public TspDp(int[,] distance) : this(0, distance)
         {
         }
 
-        public TspDp(int start, int[,] distance)
+        public TspDp(int startNode, int[,] distance)
         {
             nodeCount = distance.GetLength(0);
             TourCost = ushort.MaxValue;
-            this.start = start;
+            this.startNode = startNode;
             this.distance = distance;
             memo = new int[nodeCount, 1 << nodeCount];
             ComputeMinTourCost();
@@ -62,17 +75,16 @@ namespace GasStationsDemo
         public string ReconstructTour()
         {
             var tour = new List<int>();
-            var lastNode = start;
+            var lastNode = startNode;
             var state = (1 << nodeCount) - 1;
-            tour.Add(start);
-
+            tour.Add(startNode);
 
             while (state > 1)
             {
                 var node = -1;
                 for (var j = 0; j < nodeCount; j++)
                 {
-                    if (j == start || NotIn(j, state)) continue;
+                    if (j == startNode || NotIn(j, state)) continue;
                     if (node == -1) node = j;
                     var prevDist = memo[node, state] + distance[node, lastNode];
                     var newDist = memo[j, state] + distance[j, lastNode];
@@ -87,8 +99,7 @@ namespace GasStationsDemo
                 lastNode = node;
             }
 
-            tour.Add(start);
-
+            tour.Add(startNode);
             tour.Reverse();
             return string.Join(" => ", tour);
         }
@@ -101,64 +112,58 @@ namespace GasStationsDemo
                 TourCost = distance[1, 0] * 2;
                 return;
             }
-            var finalState = (1 << nodeCount) - 1;
 
+            var fullSet = (1 << nodeCount) - 1;
 
-
-            for (var end = 0; end < nodeCount; end++)
+            for (var nextNode = 0; nextNode < nodeCount; nextNode++)
             {
-                if (end == start) continue;
-                memo[end, (1 << start) | (1 << end)] = distance[start, end];
+                if (nextNode == startNode) continue;
+                memo[nextNode, (1 << startNode) | (1 << nextNode)] = distance[startNode, nextNode];
             }
 
-
-            for (var r = 3; r <= nodeCount; r++)
+            for (var s = 3; s <= nodeCount; s++)
             {
-                foreach (var subset in Combinations(r, nodeCount))
+                foreach (var subset in Combinations(s, nodeCount))
                 {
-                    if (NotIn(start, subset)) continue;
-                    for (var next = 0; next < nodeCount; next++)
+                    if (NotIn(startNode, subset)) continue;
+                    for (var nextEnd = 0; nextEnd < nodeCount; nextEnd++)
                     {
-                        if (next == start || NotIn(next, subset)) continue;
-                        var subsetWithoutNext = subset ^ (1 << next);
+                        if (nextEnd == startNode || NotIn(nextEnd, subset)) continue;
+                        var subMinusNextEnd = subset ^ (1 << nextEnd);
                         var minDist = int.MaxValue;
-                        for (var end = 0; end < nodeCount; end++)
+                        for (var lastEnd = 0; lastEnd < nodeCount; lastEnd++)
                         {
-                            if (end == start || end == next || NotIn(end, subset)) continue;
-                            var newDistance = memo[end, subsetWithoutNext] + distance[end, next];
+                            if (lastEnd == startNode || lastEnd == nextEnd || NotIn(lastEnd, subset)) continue;
+                            var newDistance = memo[lastEnd, subMinusNextEnd] + distance[lastEnd, nextEnd];
                             if (newDistance < minDist)
                             {
                                 minDist = newDistance;
                             }
                         }
-                        memo[next, subset] = minDist;
 
+                        memo[nextEnd, subset] = minDist;
 
                         // This works too but is almost twice slower
                         //
                         //memo[next, subset] = Enumerable.Range(0, nodeCount)
-                        //    .Where(node => node != start && node != next && !NotIn(node, subset))
+                        //    .Where(node => node != startNode && node != next && !NotIn(node, subset))
                         //    .Select(node => memo[node, subsetWithoutNext] + distance[node, next])
                         //    .Min();
-
                     }
-
                 }
             }
 
-
-            for (var i = 0; i < nodeCount; i++)
+            for (var node = 0; node < nodeCount; node++)
             {
-                if (i == start) continue;
-                var tourCost = memo[i, finalState] + distance[i, start];
+                if (node == startNode) continue;
+                var tourCost = memo[node, fullSet] + distance[node, startNode];
                 if (tourCost < TourCost)
                 {
                     TourCost = tourCost;
                 }
             }
         }
-
-
+        
         public static bool NotIn(int node, int subset)
         {
             return ((1 << node) & subset) == 0;
@@ -173,7 +178,6 @@ namespace GasStationsDemo
 
         private static void Combinations(int set, int at, int r, int n, List<int> subsets)
         {
-
             var elementsLeftToPick = n - at;
             if (elementsLeftToPick < r) return;
 
@@ -185,7 +189,6 @@ namespace GasStationsDemo
             {
                 for (var i = at; i < n; i++)
                 {
-
                     set ^= 1 << i;
 
                     Combinations(set, i + 1, r - 1, n, subsets);
@@ -200,7 +203,6 @@ namespace GasStationsDemo
             Console.OutputEncoding = Encoding.UTF8;
             var result = new StringBuilder();
             Console.Write(" ".PadRight(3));
-
 
             for (var h = 3; h < memo.GetLength(1); h++)
             {

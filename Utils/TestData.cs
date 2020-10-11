@@ -7,11 +7,11 @@ namespace Utils
 
         public static int[,] Test1 =
         {
-            {  0, 11, 13, 22, 7 },
-            { 11, 0 , 15, 18, 17},
-            { 13, 15, 0,  11, 11},
-            { 22, 18, 11,  0, 22},
-            { 7 , 17, 11, 22, 0 }
+            {0, 11, 13, 22, 7},
+            {11, 0, 15, 18, 17},
+            {13, 15, 0, 11, 11},
+            {22, 18, 11, 0, 22},
+            {7, 17, 11, 22, 0}
         };
 
         // Tim Roughgardern's matrix from "Algorithms Illuminated", part 4
@@ -19,16 +19,27 @@ namespace Utils
         // Minimal tour length: 23
         public static int[,] Test2 =
         {
-            { 0, 1, 4, 5, 10},
-            { 1, 0, 2, 6, 3 },
-            { 4, 2, 0, 7, 8 },
-            { 5, 6, 7, 0, 9 },
-            { 10, 3, 8, 9, 0 }
+            {0, 1, 4, 5, 10},
+            {1, 0, 2, 6, 3},
+            {4, 2, 0, 7, 8},
+            {5, 6, 7, 0, 9},
+            {10, 3, 8, 9, 0}
         };
+        // Five from https://people.sc.fsu.edu/~jburkardt/datasets/tsp/tsp.html
+        // Tour: 0-3-4-1-2-0
+        // minimal tour length: 19
+        public static int[,] Test3 = 
+        {
+            {0, 3, 4, 2, 7 },
+            { 3, 0, 4, 6, 3},
+            { 4, 4, 0, 5, 8},
+            { 2, 6, 5, 0, 6},
+            { 7, 3, 8, 6, 0 },
+    };
 
         // Example from http://www.cs.tufts.edu/~cowen/advanced/2002/adv-lect3.pdf
 
-        public static int[,] Test7 =
+        public static int[,] Test4 =
         {
             {0,  11, 14, 10, 10, 15},
             {11, 0,  9,  9,  15, 16},
@@ -41,7 +52,7 @@ namespace Utils
         // GR17 is a set of 17 cities, from TSPLIB.
         // Tour: 0-15-11-8-4-1-9-10-2-14-13-16-5-7-6-12-3-0
         // Minimal tour length: 2085
-        public static int[,] Test3 =
+        public static int[,] Test5 =
         {
             { 0, 633, 257,  91, 412, 150,  80, 134, 259, 505, 353, 324,  70, 211, 268, 246, 121},
             { 633,   0, 390, 661, 227, 488, 572, 530, 555, 289, 282, 638, 567, 466, 420, 745, 518},
@@ -65,7 +76,7 @@ namespace Utils
         // P01 is a set of 15 cities
         // Tour: 0-12-1-14-8-4-6-2-11-13-9-7-5-3-10-0
         // Minimal tour length: 291
-        public static int[,] Test4 =
+        public static int[,] Test6 =
         {
             {0, 29, 82, 46, 68, 52, 72, 42, 51, 55, 29, 74, 23, 72, 46},
             {29, 0, 55, 46, 42, 43, 43, 23, 23, 31, 41, 51, 11, 52, 21},
@@ -88,7 +99,7 @@ namespace Utils
         // NOTE the following results have not been confirmed
         // Tour:  0-8-1-9-2-5-3-6-7-10-4-0
         // Minimum tour length: 133
-        public static int[,] Test5 =
+        public static int[,] Test7 =
         {
             {0, 8, 50, 31, 12, 48, 36, 2, 5, 39, 10},
             {8, 0, 38, 9, 33, 37, 22, 6, 4, 14, 32},
@@ -107,7 +118,7 @@ namespace Utils
         // FRI26 is a set of 26 cities, from TSPLIB
         // Tour: 0-24-23-22-25-21-20-16-17-19-18-15-10-11-12-14-13-9-8-7-6-4-5-3-2-1-0 
         // Minimal tour length: 937
-        public static int[,] Test6 =
+        public static int[,] Test8 =
         {
             {
                 0, 83, 93, 129, 133, 139, 151, 169, 135, 114, 110, 98, 99, 95, 81, 152, 159, 181, 172, 185, 147, 157,
@@ -211,6 +222,11 @@ namespace Utils
                 58, 107, 90, 0
             },
         };
+
+        
+
+
+        
 
 
     }
