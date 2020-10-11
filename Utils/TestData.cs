@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace tsp_dp
+﻿
+namespace Utils
 {
-    class TestData
+    public class TestData
     {
         // Original matrix from problem description
 
-        public static double[,] Test1 =
+        public static int[,] Test1 =
         {
             {  0, 11, 13, 22, 7 },
             { 11, 0 , 15, 18, 17},
@@ -17,10 +14,10 @@ namespace tsp_dp
             { 7 , 17, 11, 22, 0 }
         };
 
-        // Roughgardern's matrix
+        // Tim Roughgardern's matrix from "Algorithms Illuminated", part 4
         // Tour: 0-2-1-4-3-0
         // Minimal tour length: 23
-        public static double[,] Test2 =
+        public static int[,] Test2 =
         {
             { 0, 1, 4, 5, 10},
             { 1, 0, 2, 6, 3 },
@@ -29,10 +26,22 @@ namespace tsp_dp
             { 10, 3, 8, 9, 0 }
         };
 
+        // Example from http://www.cs.tufts.edu/~cowen/advanced/2002/adv-lect3.pdf
+
+        public static int[,] Test7 =
+        {
+            {0,  11, 14, 10, 10, 15},
+            {11, 0,  9,  9,  15, 16},
+            {14, 9,  0,  6,  13, 11},
+            {10, 9,  6,  0,  9,  10},
+            {10, 15, 13, 9,  0,  8},
+            {15, 16, 11, 10, 8,  0}
+        };
+
         // GR17 is a set of 17 cities, from TSPLIB.
         // Tour: 0-15-11-8-4-1-9-10-2-14-13-16-5-7-6-12-3-0
         // Minimal tour length: 2085
-        public static double[,] Test3 =
+        public static int[,] Test3 =
         {
             { 0, 633, 257,  91, 412, 150,  80, 134, 259, 505, 353, 324,  70, 211, 268, 246, 121},
             { 633,   0, 390, 661, 227, 488, 572, 530, 555, 289, 282, 638, 567, 466, 420, 745, 518},
@@ -56,7 +65,7 @@ namespace tsp_dp
         // P01 is a set of 15 cities
         // Tour: 0-12-1-14-8-4-6-2-11-13-9-7-5-3-10-0
         // Minimal tour length: 291
-        public static double[,] Test4 =
+        public static int[,] Test4 =
         {
             {0, 29, 82, 46, 68, 52, 72, 42, 51, 55, 29, 74, 23, 72, 46},
             {29, 0, 55, 46, 42, 43, 43, 23, 23, 31, 41, 51, 11, 52, 21},
@@ -76,9 +85,10 @@ namespace tsp_dp
         };
 
         // SP11 describes 11 artificial cities, with arbitrary integer distances.
-        // Tour: ?
-        // Minimum tour length: ?
-        public static double[,] Test5 =
+        // NOTE the following results have not been confirmed
+        // Tour:  0-8-1-9-2-5-3-6-7-10-4-0
+        // Minimum tour length: 133
+        public static int[,] Test5 =
         {
             {0, 8, 50, 31, 12, 48, 36, 2, 5, 39, 10},
             {8, 0, 38, 9, 33, 37, 22, 6, 4, 14, 32},
@@ -97,7 +107,7 @@ namespace tsp_dp
         // FRI26 is a set of 26 cities, from TSPLIB
         // Tour: 0-24-23-22-25-21-20-16-17-19-18-15-10-11-12-14-13-9-8-7-6-4-5-3-2-1-0 
         // Minimal tour length: 937
-        public static double[,] Test6 =
+        public static int[,] Test6 =
         {
             {
                 0, 83, 93, 129, 133, 139, 151, 169, 135, 114, 110, 98, 99, 95, 81, 152, 159, 181, 172, 185, 147, 157,
@@ -202,7 +212,7 @@ namespace tsp_dp
             },
         };
 
-        
+
     }
 }
 
