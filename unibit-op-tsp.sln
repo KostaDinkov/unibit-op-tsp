@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GasStations", "tsp-dp\GasStations.csproj", "{A67E1C0D-6CBC-4903-AC57-7FBBDD82CEC3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gas-stations", "gas-stations\GasStations.csproj", "{A67E1C0D-6CBC-4903-AC57-7FBBDD82CEC3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GasStationsDemo", "tsp-dp-recursive\GasStationsDemo.csproj", "{38C74AC0-C610-4214-A7F9-50B64D3AE707}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gas-stations", "gas-stations-demo\GasStationsDemo.csproj", "{38C74AC0-C610-4214-A7F9-50B64D3AE707}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utils", "Utils\Utils.csproj", "{FCF33AE2-3064-45BF-A699-FEBA96C199D1}"
 EndProject

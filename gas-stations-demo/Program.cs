@@ -14,7 +14,7 @@ namespace GasStationsDemo
      * the tour itself, e.g. 0-3-4-1-5,
      * and some benchmarking timings
      * The input is not read from the console, but being imported
-     * from a class with some aditional test data.
+     * from a class with some additional test data.
      * 
      * author Kosta Dinkov
      * 
